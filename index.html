@@ -4,140 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Friend Availability Calendar</title>
-    
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <style>
-        :root { 
-            --primary: #6c5ce7; 
-            --primary-light: #a29bfe;
-            --bg: #f0f2f5; 
-            --text: #2d3436;
-        }
-        
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background: var(--bg); 
-            color: var(--text);
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            padding: 10px;
-            margin: 0;
-        }
-
-        .card { 
-            background: white; 
-            padding: 20px; 
-            border-radius: 16px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
-            width: 100%; 
-            max-width: 600px; 
-            margin-top: 20px;
-            box-sizing: border-box;
-        }
-
-        h2 { margin-top: 0; color: var(--primary); }
-        
+        :root { --primary: #6c5ce7; --bg: #f0f2f5; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 10px; margin: 0; }
+        .card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 500px; margin-top: 20px; }
         .setup-box { display: flex; flex-direction: column; gap: 15px; }
-        
-        input { 
-            padding: 14px; 
-            border: 2px solid #dfe6e9; 
-            border-radius: 8px; 
-            font-size: 16px; 
-            outline: none;
-            transition: border-color 0.3s;
-        }
-        input:focus { border-color: var(--primary); }
-
-        button { 
-            padding: 14px; 
-            background: var(--primary); 
-            color: white; 
-            border: none; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 16px;
-        }
-        button:active { transform: scale(0.98); }
-        
-        .calendar-nav { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin: 20px 0; 
-        }
-
-        .grid { 
-            display: grid; 
-            grid-template-columns: repeat(7, 1fr); 
-            gap: 5px; 
-        }
-
-        .day-label { 
-            text-align: center; 
-            font-size: 0.7em; 
-            font-weight: bold;
-            color: #b2bec3; 
-            text-transform: uppercase;
-            padding-bottom: 5px;
-        }
-
-        .cell { 
-            background: #fff; 
-            border: 1px solid #f1f2f6; 
-            min-height: 70px; 
-            border-radius: 6px; 
-            padding: 4px; 
-            cursor: pointer; 
-            position: relative;
-            touch-action: manipulation;
-            user-select: none;
-        }
-        .cell:hover { background: #f8f9ff; }
-        .cell.today { border: 2px solid var(--primary-light); }
-
-        .date-num { font-size: 0.8em; font-weight: 600; margin-bottom: 4px; }
-        
-        .initials-list { 
-            display: flex; 
-            flex-wrap: wrap; 
-            gap: 3px; 
-        }
-
-        .initial { 
-            background: var(--primary); 
-            color: white; 
-            font-size: 0.65em; 
-            width: 18px; 
-            height: 18px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            border-radius: 50%; 
-            font-weight: bold;
-        }
-
+        input { padding: 14px; border: 2px solid #dfe6e9; border-radius: 8px; font-size: 16px; }
+        button { padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .calendar-nav { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; }
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .day-label { text-align: center; font-size: 0.7em; font-weight: bold; color: #b2bec3; }
+        .cell { background: #fff; border: 1px solid #f1f2f6; min-height: 65px; border-radius: 6px; padding: 4px; cursor: pointer; position: relative; touch-action: manipulation; }
+        .cell.today { border: 2px solid var(--primary); }
+        .date-num { font-size: 0.8em; font-weight: 600; }
+        .initials-list { display: flex; flex-wrap: wrap; gap: 3px; }
+        .initial { background: var(--primary); color: white; font-size: 0.6em; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; }
         .hidden { display: none; }
-        .status { font-size: 0.75em; color: #636e72; text-align: center; margin-top: 15px; }
-
-        @media (max-width: 400px) {
-            .cell { min-height: 60px; }
-            .initial { width: 15px; height: 15px; font-size: 0.55em; }
-        }
+        .error-overlay { background: #ff7675; color: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 0.9em; }
     </style>
 </head>
 <body>
 
     <div class="card">
+        <!-- Firebase Config Warning -->
+        <div id="config-error" class="error-overlay hidden">
+            ⚠️ <b>Firebase Not Configured!</b><br>Update the firebaseConfig in your code.
+        </div>
+
         <!-- Step 1: Login -->
         <div id="step-name" class="setup-box">
             <h2>Welcome!</h2>
-            <p>Enter your name to start marking your availability.</p>
             <input type="text" id="user-name" placeholder="Your Name (e.g. Alice)">
             <button onclick="saveName()">Continue</button>
         </div>
@@ -145,34 +44,28 @@
         <!-- Step 2: Join Calendar -->
         <div id="step-join" class="setup-box hidden">
             <h2>Join a Calendar</h2>
-            <p>Enter a name for your group calendar. Share this name with friends so they can join!</p>
             <input type="text" id="cal-id" placeholder="Calendar Name (e.g. HawaiiTrip)">
             <button onclick="joinCalendar()">Open Calendar</button>
         </div>
 
-        <!-- Step 3: The Calendar -->
+        <!-- Step 3: Calendar -->
         <div id="step-calendar" class="hidden">
-            <div style="display:flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px;">
-                <span>👤 <b id="display-user"></b></span>
-                <span>📅 <b id="display-cal"></b></span>
+            <div style="display:flex; justify-content: space-between; margin-bottom:10px;">
+                <small>👤 <b id="display-user"></b></small>
+                <small>📅 <b id="display-cal"></b></small>
             </div>
-            
             <div class="calendar-nav">
-                <button onclick="changeMonth(-1)" style="padding: 5px 15px;">❮</button>
+                <button onclick="changeMonth(-1)">❮</button>
                 <h3 id="month-year" style="margin:0;"></h3>
-                <button onclick="changeMonth(1)" style="padding: 5px 15px;">❯</button>
+                <button onclick="changeMonth(1)">❯</button>
             </div>
-
             <div class="grid" id="calendar-grid"></div>
-            
-            <p class="status">Tap a day to add/remove your initial.</p>
-            <button onclick="copyShareLink()" style="width:100%; background: #00b894; margin-top:10px;">Copy Share Link</button>
+            <button onclick="copyShareLink()" style="width:100%; background: #00b894; margin-top:20px;">Copy Share Link</button>
         </div>
     </div>
 
     <script>
-        // --- 1. YOUR FIREBASE CONFIG GOES HERE ---
-        // REPLACE THESE WITH YOUR KEYS FROM FIREBASE CONSOLE
+        // --- 1. CONFIGURATION ---
         const firebaseConfig = {
             apiKey: "PASTE_HERE",
             authDomain: "PASTE_HERE",
@@ -183,45 +76,50 @@
             appId: "PASTE_HERE"
         };
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        // --- 2. INITIALIZATION ---
+        var currentUser = localStorage.getItem('cal_username') || "";
+        var currentRoom = "";
+        var viewDate = new Date();
+        var remoteData = {};
+        var db;
 
-        let currentUser = localStorage.getItem('cal_username');
-        let currentRoom = '';
-        let viewDate = new Date();
-        let remoteData = {};
+        // Safety check: Does the config still have placeholders?
+        if (firebaseConfig.apiKey.includes("PASTE_HERE") || firebaseConfig.databaseURL.includes("PASTE_HERE")) {
+            document.getElementById('config-error').classList.remove('hidden');
+        } else {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+        }
 
-        // Auto-handle URL parameters (?room=MyCalendar)
-        window.onload = () => {
+        window.onload = function() {
             const params = new URLSearchParams(window.location.search);
             const roomParam = params.get('room');
-            if (roomParam) {
-                document.getElementById('cal-id').value = roomParam;
-            }
+            if (roomParam) document.getElementById('cal-id').value = roomParam;
+            
             if (currentUser) {
                 showStep('step-join');
             }
         };
 
+        // --- 3. FUNCTIONS ---
         function saveName() {
-            const name = document.getElementById('user-name').value.trim();
-            if (!name) return alert("Please enter your name");
-            currentUser = name;
-            localStorage.setItem('cal_username', name);
+            const nameInput = document.getElementById('user-name').value.trim();
+            if (!nameInput) return alert("Please enter your name");
+            currentUser = nameInput;
+            localStorage.setItem('cal_username', currentUser);
             showStep('step-join');
         }
 
         function joinCalendar() {
+            if (!db) return alert("Firebase not connected. Check console for errors.");
             const room = document.getElementById('cal-id').value.trim().toLowerCase().replace(/[^a-z0-9]/g, '-');
             if (!room) return alert("Enter a calendar name");
-            currentRoom = room;
             
+            currentRoom = room;
             document.getElementById('display-user').innerText = currentUser;
             document.getElementById('display-cal').innerText = currentRoom;
             showStep('step-calendar');
 
-            // Listen for changes
             db.ref('calendars/' + currentRoom).on('value', (snapshot) => {
                 remoteData = snapshot.val() || {};
                 renderGrid();
@@ -231,11 +129,9 @@
         function renderGrid() {
             const grid = document.getElementById('calendar-grid');
             grid.innerHTML = '';
-            
             const year = viewDate.getFullYear();
             const month = viewDate.getMonth();
-            document.getElementById('month-year').innerText = 
-                new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(viewDate);
+            document.getElementById('month-year').innerText = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(viewDate);
 
             ['S','M','T','W','T','F','S'].forEach(d => {
                 const el = document.createElement('div');
@@ -252,12 +148,9 @@
                 const dateStr = `${year}-${month + 1}-${d}`;
                 const cell = document.createElement('div');
                 cell.className = 'cell';
+                if (new Date().toDateString() === new Date(year, month, d).toDateString()) cell.classList.add('today');
                 
-                const isToday = new Date().toDateString() === new Date(year, month, d).toDateString();
-                if (isToday) cell.classList.add('today');
-
                 cell.innerHTML = `<div class="date-num">${d}</div>`;
-                
                 const list = document.createElement('div');
                 list.className = 'initials-list';
                 
@@ -266,10 +159,8 @@
                     const span = document.createElement('span');
                     span.className = 'initial';
                     span.innerText = p.charAt(0).toUpperCase();
-                    span.title = p;
                     list.appendChild(span);
                 });
-
                 cell.appendChild(list);
                 cell.onclick = () => toggleDay(dateStr, people);
                 grid.appendChild(cell);
@@ -301,7 +192,7 @@
         function copyShareLink() {
             const url = window.location.origin + window.location.pathname + '?room=' + currentRoom;
             navigator.clipboard.writeText(url);
-            alert("Link copied! Send this to your friends.");
+            alert("Link copied! Send it to friends.");
         }
     </script>
 </body>
