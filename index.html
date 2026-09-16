@@ -3,66 +3,971 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Friend Availability Calendar</title>
+    <title>Friend Availability Calendar - Plan Hangouts Easily</title>
+    <meta name="description" content="Find the best days to meet up with friends. Real-time shared availability calendar.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <style>
-        :root { --primary: #6c5ce7; --bg: #f0f2f5; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 10px; margin: 0; }
-        .card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 500px; margin-top: 20px; }
-        .setup-box { display: flex; flex-direction: column; gap: 15px; }
-        input { padding: 14px; border: 2px solid #dfe6e9; border-radius: 8px; font-size: 16px; }
-        button { padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .calendar-nav { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; }
-        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
-        .day-label { text-align: center; font-size: 0.7em; font-weight: bold; color: #b2bec3; }
-        .cell { background: #fff; border: 1px solid #f1f2f6; min-height: 65px; border-radius: 6px; padding: 4px; cursor: pointer; position: relative; touch-action: manipulation; }
-        .cell.today { border: 2px solid var(--primary); }
-        .date-num { font-size: 0.8em; font-weight: 600; }
-        .initials-list { display: flex; flex-wrap: wrap; gap: 3px; }
-        .initial { background: var(--primary); color: white; font-size: 0.6em; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; }
-        .hidden { display: none; }
-        .error-overlay { background: #ff7675; color: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 0.9em; }
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --primary-light: #e0e7ff;
+            --secondary: #8b5cf6;
+            --accent: #10b981;
+            --accent-light: #d1fae5;
+            --gold: #f59e0b;
+            --gold-light: #fef3c7;
+            --dark: #0f172a;
+            --slate: #334155;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --bg-page: #f8fafc;
+            --card-bg: #ffffff;
+            --radius-lg: 20px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 20px -2px rgba(99, 102, 241, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 20px 40px -10px rgba(15, 23, 42, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f0f4ff 0%, #faf5ff 50%, #f0fdf4 100%);
+            min-height: 100vh;
+            color: var(--dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px 12px 40px 12px;
+        }
+
+        /* Container */
+        .app-container {
+            width: 100%;
+            max-width: 580px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Header Branding */
+        .brand-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 4px;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-badge {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 22px;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+        }
+
+        .brand-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--dark), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+        }
+
+        .brand-sub {
+            font-size: 0.78rem;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        /* Card Component */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: var(--shadow-lg);
+            padding: 24px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Setup / Form Layouts */
+        .setup-box {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .setup-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--dark);
+            letter-spacing: -0.02em;
+        }
+
+        .setup-desc {
+            font-size: 0.9rem;
+            color: var(--muted);
+            line-height: 1.45;
+            margin-top: -8px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--slate);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            font-size: 1.1rem;
+            color: var(--muted);
+            pointer-events: none;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 14px 14px 14px 44px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--dark);
+            background: #fdfdfd;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+            background: #ffffff;
+            box-shadow: 0 0 0 4px var(--primary-light);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 20px;
+            border-radius: var(--radius-md);
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(99, 102, 241, 0.45);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: var(--slate);
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+            color: var(--dark);
+        }
+
+        .btn-accent {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-accent:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-sm {
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            border-radius: var(--radius-sm);
+        }
+
+        /* Recent calendars */
+        .recent-section {
+            margin-top: 10px;
+            padding-top: 16px;
+            border-top: 1px dashed var(--border);
+        }
+
+        .recent-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 10px;
+        }
+
+        .recent-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .chip {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--slate);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .chip:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-light);
+            transform: translateY(-1px);
+        }
+
+        /* Calendar Top Bar */
+        .cal-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .user-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #f8fafc;
+            padding: 6px 12px;
+            border-radius: 30px;
+            border: 1px solid var(--border);
+            font-size: 0.85rem;
+        }
+
+        .user-avatar-tiny {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.72rem;
+        }
+
+        .room-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+        }
+
+        .action-links {
+            display: flex;
+            gap: 6px;
+        }
+
+        /* Month Navigation */
+        .month-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 16px 0 12px 0;
+        }
+
+        .month-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--dark);
+            letter-spacing: -0.01em;
+        }
+
+        .month-nav-btns {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: white;
+            color: var(--slate);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .nav-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .today-btn {
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: white;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--slate);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .today-btn:hover {
+            background: #f1f5f9;
+            color: var(--dark);
+        }
+
+        /* Calendar Grid */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+        }
+
+        .day-header {
+            text-align: center;
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: var(--muted);
+            padding: 4px 0 8px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .cell {
+            background: #ffffff;
+            border: 1.5px solid #f1f5f9;
+            min-height: 70px;
+            border-radius: var(--radius-sm);
+            padding: 6px 4px 4px 4px;
+            cursor: pointer;
+            position: relative;
+            touch-action: manipulation;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+
+        .cell:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.12);
+            z-index: 2;
+        }
+
+        .cell.today {
+            border-color: var(--primary);
+            background: #fcfdff;
+        }
+
+        .cell.today .date-num {
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cell.past-day {
+            background: #fafafa;
+            opacity: 0.65;
+        }
+
+        .cell.user-selected {
+            background: #f5f7ff;
+            border-color: #a5b4fc;
+        }
+
+        .cell-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .date-num {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--slate);
+            line-height: 1;
+        }
+
+        .best-star {
+            font-size: 0.7rem;
+            color: var(--gold);
+            filter: drop-shadow(0 1px 2px rgba(245, 158, 11, 0.4));
+        }
+
+        .initials-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            margin-top: 4px;
+            align-content: flex-start;
+        }
+
+        .initial {
+            color: white;
+            font-size: 0.62rem;
+            width: 19px;
+            height: 19px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: 700;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            flex-shrink: 0;
+            transition: transform 0.15s ease;
+        }
+
+        .initial:hover {
+            transform: scale(1.15);
+            z-index: 3;
+        }
+
+        .more-count {
+            background: #64748b;
+            color: white;
+            font-size: 0.58rem;
+            padding: 1px 4px;
+            border-radius: 10px;
+            font-weight: 700;
+            line-height: 1.2;
+            align-self: center;
+        }
+
+        /* Best Dates Consensus Panel */
+        .consensus-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
+            border: 1px solid #dbeafe;
+            border-radius: var(--radius-md);
+            padding: 14px 16px;
+            margin-top: 18px;
+        }
+
+        .consensus-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .consensus-title {
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: #1e40af;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .top-dates-list {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .top-date-chip {
+            background: white;
+            border: 1px solid #bfdbfe;
+            border-radius: var(--radius-sm);
+            padding: 8px 12px;
+            display: flex;
+            flex-direction: column;
+            min-width: 110px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .top-date-chip:hover {
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .top-date-day {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--slate);
+        }
+
+        .top-date-badge {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-top: 4px;
+        }
+
+        /* Share Bar */
+        .share-bar {
+            display: flex;
+            gap: 8px;
+            margin-top: 18px;
+        }
+
+        /* Modal Styles */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-backdrop.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: white;
+            width: 100%;
+            max-width: 440px;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+            padding: 24px;
+            transform: scale(0.95);
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+        }
+
+        .modal-backdrop.open .modal-card {
+            transform: scale(1);
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: #f1f5f9;
+            color: var(--muted);
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+
+        .modal-close-btn:hover {
+            background: #e2e8f0;
+            color: var(--dark);
+        }
+
+        .modal-date-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin-bottom: 8px;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--dark);
+            margin-bottom: 4px;
+        }
+
+        .modal-subtitle {
+            font-size: 0.88rem;
+            color: var(--muted);
+            margin-bottom: 20px;
+        }
+
+        .friends-list-container {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            max-height: 180px;
+            overflow-y: auto;
+            padding: 8px;
+            margin-bottom: 20px;
+            background: #f8fafc;
+        }
+
+        .friend-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 10px;
+            border-radius: var(--radius-sm);
+            background: white;
+            margin-bottom: 6px;
+            border: 1px solid #f1f5f9;
+        }
+
+        .friend-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .friend-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .friend-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .friend-badge-you {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
+        .modal-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(8px);
+            color: white;
+            padding: 10px 18px;
+            border-radius: 30px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translateY(12px);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .error-overlay {
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: var(--radius-md);
+            margin-bottom: 14px;
+            font-size: 0.88rem;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                padding: 18px 14px;
+            }
+            .cell {
+                min-height: 60px;
+                padding: 4px 2px;
+            }
+            .initial {
+                width: 17px;
+                height: 17px;
+                font-size: 0.58rem;
+            }
+            .date-num {
+                font-size: 0.75rem;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <!-- Firebase Config Warning -->
-        <div id="config-error" class="error-overlay hidden">
-            ⚠️ <b>Firebase Not Configured!</b><br>Update the firebaseConfig in your code.
-        </div>
-
-        <!-- Step 1: Login -->
-        <div id="step-name" class="setup-box">
-            <h2>Welcome!</h2>
-            <input type="text" id="user-name" placeholder="Your Name (e.g. Alice)">
-            <button onclick="saveName()">Continue</button>
-        </div>
-
-        <!-- Step 2: Join Calendar -->
-        <div id="step-join" class="setup-box hidden">
-            <h2>Join a Calendar</h2>
-            <input type="text" id="cal-id" placeholder="Calendar Name (e.g. HawaiiTrip)">
-            <button onclick="joinCalendar()">Open Calendar</button>
-        </div>
-
-        <!-- Step 3: Calendar -->
-        <div id="step-calendar" class="hidden">
-            <div style="display:flex; justify-content: space-between; margin-bottom:10px;">
-                <small>👤 <b id="display-user"></b></small>
-                <small>📅 <b id="display-cal"></b></small>
+    <div class="app-container">
+        <!-- Header Branding -->
+        <header class="brand-header">
+            <div class="brand-logo">
+                <div class="logo-badge">🗓️</div>
+                <div>
+                    <h1 class="brand-title">Friend Sync</h1>
+                    <p class="brand-sub">Coordinate plans without the group-chat hassle</p>
+                </div>
             </div>
-            <div class="calendar-nav">
-                <button onclick="changeMonth(-1)">❮</button>
-                <h3 id="month-year" style="margin:0;"></h3>
-                <button onclick="changeMonth(1)">❯</button>
+            <button id="header-switch-btn" class="btn btn-secondary btn-sm hidden" onclick="switchCalendar()">
+                ⇄ Change Calendar
+            </button>
+        </header>
+
+        <!-- Main Card -->
+        <main class="card">
+            <!-- Firebase Config Warning -->
+            <div id="config-error" class="error-overlay hidden">
+                ⚠️ <b>Firebase Configuration Needed!</b><br>
+                Please ensure valid Realtime Database credentials are set.
             </div>
-            <div class="grid" id="calendar-grid"></div>
-            <button onclick="copyShareLink()" style="width:100%; background: #00b894; margin-top:20px;">Copy Share Link</button>
+
+            <!-- STEP 1: USER ONBOARDING -->
+            <section id="step-name" class="setup-box">
+                <div>
+                    <h2 class="setup-title">What's your name?</h2>
+                    <p class="setup-desc">Your friends will see this name on days you are available.</p>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label" for="user-name">Your Display Name</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">👤</span>
+                        <input type="text" id="user-name" placeholder="e.g. Alice, Marcus, Sarah..." maxlength="25" autocomplete="name" onkeydown="if(event.key==='Enter') saveName()">
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="saveName()">
+                    Continue ➜
+                </button>
+            </section>
+
+            <!-- STEP 2: JOIN OR CREATE CALENDAR -->
+            <section id="step-join" class="setup-box hidden">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h2 class="setup-title">Join a Calendar</h2>
+                        <p class="setup-desc">Enter an event name or pick a recent hangout.</p>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="editProfile()">
+                        ✏️ <span id="welcome-user-label"></span>
+                    </button>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label" for="cal-id">Calendar / Trip Name</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">🎉</span>
+                        <input type="text" id="cal-id" placeholder="e.g. HawaiiTrip, BoardGameNight..." maxlength="30" onkeydown="if(event.key==='Enter') joinCalendar()">
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="joinCalendar()">
+                    Open Calendar ➜
+                </button>
+
+                <!-- Recent Calendars History -->
+                <div id="recent-calendars-box" class="recent-section hidden">
+                    <div class="recent-title">Recent Calendars</div>
+                    <div class="recent-chips" id="recent-chips-container"></div>
+                </div>
+            </section>
+
+            <!-- STEP 3: INTERACTIVE CALENDAR -->
+            <section id="step-calendar" class="hidden">
+                <!-- Top Status Bar -->
+                <div class="cal-topbar">
+                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                        <div class="room-pill">
+                            <span>📅</span>
+                            <span id="display-cal"></span>
+                        </div>
+                        <div class="user-pill">
+                            <div class="user-avatar-tiny" id="user-avatar-badge"></div>
+                            <span id="display-user"></span>
+                        </div>
+                    </div>
+                    <div class="action-links">
+                        <button class="btn btn-secondary btn-sm" onclick="editProfile()" title="Change your name">
+                            Profile
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="switchCalendar()" title="Switch to another room">
+                            Switch
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Month Navigation -->
+                <div class="month-header">
+                    <h2 class="month-title" id="month-year"></h2>
+                    <div class="month-nav-btns">
+                        <button class="today-btn" onclick="goToToday()">Today</button>
+                        <button class="nav-btn" onclick="changeMonth(-1)" aria-label="Previous Month">❮</button>
+                        <button class="nav-btn" onclick="changeMonth(1)" aria-label="Next Month">❯</button>
+                    </div>
+                </div>
+
+                <!-- Calendar Grid -->
+                <div class="calendar-grid" id="calendar-grid"></div>
+
+                <!-- Consensus Highlight Panel -->
+                <div id="consensus-panel" class="consensus-card hidden">
+                    <div class="consensus-header">
+                        <div class="consensus-title">
+                            <span>🔥</span> Top Available Dates
+                        </div>
+                        <span style="font-size:0.75rem; color:var(--muted); font-weight:600;" id="consensus-summary"></span>
+                    </div>
+                    <div class="top-dates-list" id="top-dates-list"></div>
+                </div>
+
+                <!-- Action Bar (Share) -->
+                <div class="share-bar">
+                    <button class="btn btn-accent" style="flex:1;" onclick="copyShareLink()" id="share-link-btn">
+                        🔗 Copy Calendar Share Link
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- DAY DETAIL & AVAILABILITY MODAL -->
+    <div class="modal-backdrop" id="day-modal" onclick="onBackdropClick(event)">
+        <div class="modal-card" role="dialog" aria-modal="true">
+            <button class="modal-close-btn" onclick="closeDayModal()" aria-label="Close">✕</button>
+            <div class="modal-date-badge" id="modal-date-badge">🗓️ Date</div>
+            <h3 class="modal-title" id="modal-date-title">Date Details</h3>
+            <p class="modal-subtitle" id="modal-date-subtitle">0 friends available</p>
+
+            <!-- Friend list container -->
+            <div class="friends-list-container" id="modal-friends-list"></div>
+
+            <!-- Modal Action Buttons -->
+            <div class="modal-actions">
+                <button id="modal-toggle-btn" class="btn btn-primary" onclick="toggleModalDay()">
+                    ✓ Mark Myself Available
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="closeDayModal()">
+                    Done
+                </button>
+            </div>
         </div>
     </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div class="toast-container" id="toast-container"></div>
 
     <script>
         // --- 1. CONFIGURATION ---
@@ -76,122 +981,586 @@
             appId: "1:148782966072:web:b81fa030d52795da800dcd"
         };
 
-        // --- 2. INITIALIZATION ---
-        var currentUser = localStorage.getItem('cal_username') || "";
-        var currentRoom = "";
-        var viewDate = new Date();
-        var remoteData = {};
-        var db;
+        // --- 2. APPLICATION STATE ---
+        let currentUser = localStorage.getItem('cal_username') || "";
+        let currentRoom = "";
+        let viewDate = new Date();
+        let remoteData = {};
+        let db = null;
+        let activeListenerRef = null;
 
-        // Safety check: Does the config still have placeholders?
-        if (firebaseConfig.apiKey.includes("PASTE_HERE") || firebaseConfig.databaseURL.includes("PASTE_HERE")) {
-            document.getElementById('config-error').classList.remove('hidden');
-        } else {
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.database();
-        }
-
-        window.onload = function() {
-            const params = new URLSearchParams(window.location.search);
-            const roomParam = params.get('room');
-            if (roomParam) document.getElementById('cal-id').value = roomParam;
-            
-            if (currentUser) {
-                showStep('step-join');
-            }
+        // Modal Specific State (Reset on open to comply with strict modal state rule)
+        let modalState = {
+            isOpen: false,
+            dateKey: null,
+            isUserAvailable: false,
+            isLoading: false,
+            errorMessage: null
         };
 
-        // --- 3. FUNCTIONS ---
+        // Vibrant distinct avatar palette generator
+        const AVATAR_COLORS = [
+            '#6366f1', '#ec4899', '#f59e0b', '#10b981', 
+            '#8b5cf6', '#06b6d4', '#f97316', '#14b8a6', 
+            '#3b82f6', '#ef4444', '#84cc16', '#a855f7'
+        ];
+
+        function getAvatarColor(name) {
+            if (!name) return AVATAR_COLORS[0];
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const index = Math.abs(hash) % AVATAR_COLORS.length;
+            return AVATAR_COLORS[index];
+        }
+
+        // --- 3. FIREBASE INIT ---
+        try {
+            if (firebaseConfig.apiKey.includes("PASTE_HERE") || firebaseConfig.databaseURL.includes("PASTE_HERE")) {
+                document.getElementById('config-error').classList.remove('hidden');
+            } else {
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.database();
+            }
+        } catch (e) {
+            console.error("Firebase Initialization Error:", e);
+            document.getElementById('config-error').classList.remove('hidden');
+        }
+
+        // --- 4. INITIALIZATION & ROUTING ---
+        window.addEventListener('DOMContentLoaded', () => {
+            renderRecentCalendars();
+            
+            const params = new URLSearchParams(window.location.search);
+            const roomParam = params.get('room');
+            if (roomParam) {
+                document.getElementById('cal-id').value = roomParam;
+            }
+
+            if (currentUser) {
+                document.getElementById('user-name').value = currentUser;
+                document.getElementById('welcome-user-label').innerText = currentUser;
+                if (roomParam) {
+                    // Directly join if both room and user exist
+                    joinCalendar(roomParam);
+                } else {
+                    showStep('step-join');
+                }
+            } else {
+                showStep('step-name');
+            }
+        });
+
+        // --- 5. ONBOARDING & ROOM MANAGEMENT ---
         function saveName() {
             const nameInput = document.getElementById('user-name').value.trim();
-            if (!nameInput) return alert("Please enter your name");
+            if (!nameInput) {
+                showToast("Please enter your name!");
+                return;
+            }
             currentUser = nameInput;
             localStorage.setItem('cal_username', currentUser);
+            document.getElementById('welcome-user-label').innerText = currentUser;
+
+            const params = new URLSearchParams(window.location.search);
+            const roomParam = params.get('room') || document.getElementById('cal-id').value.trim();
+            if (roomParam) {
+                joinCalendar(roomParam);
+            } else {
+                showStep('step-join');
+            }
+        }
+
+        function editProfile() {
+            document.getElementById('user-name').value = currentUser;
+            showStep('step-name');
+        }
+
+        function switchCalendar() {
+            if (activeListenerRef) {
+                activeListenerRef.off();
+                activeListenerRef = null;
+            }
+            document.getElementById('header-switch-btn').classList.add('hidden');
+            renderRecentCalendars();
             showStep('step-join');
         }
 
-function joinCalendar() {
-    if (!db) return alert("Firebase not connected. Check your config keys!");
-    
-    const roomInput = document.getElementById('cal-id').value.trim().toLowerCase().replace(/[^a-z0-9]/g, '-');
-    if (!roomInput) return alert("Enter a calendar name");
-    
-    currentRoom = roomInput;
-    document.getElementById('display-user').innerText = currentUser;
-    document.getElementById('display-cal').innerText = currentRoom;
-    
-    // 1. Show the step immediately
-    showStep('step-calendar');
-    
-    // 2. Draw a blank calendar right away so it's not empty
-    renderGrid(); 
+        function joinCalendar(explicitRoom) {
+            if (!db) {
+                showToast("⚠️ Firebase not connected. Check config!");
+                return;
+            }
 
-    // 3. Then listen for the data from Firebase
-    db.ref('calendars/' + currentRoom).on('value', (snapshot) => {
-        remoteData = snapshot.val() || {};
-        renderGrid(); // Redraw when the data actually arrives
-    }, (error) => {
-        console.error("Firebase Sync Error: ", error);
-        alert("Could not sync with Database. Check your Firebase Rules!");
-    });
-}
+            const roomInput = explicitRoom || document.getElementById('cal-id').value.trim();
+            const sanitizedRoom = roomInput.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/^-+|-+$/g, '');
 
+            if (!sanitizedRoom) {
+                showToast("Please enter a calendar name");
+                return;
+            }
+
+            currentRoom = sanitizedRoom;
+            saveRecentCalendar(currentRoom);
+
+            // Update URL without full reload for easy bookmarking/sharing
+            const newUrl = window.location.origin + window.location.pathname + '?room=' + currentRoom;
+            window.history.replaceState({ room: currentRoom }, '', newUrl);
+
+            // Update Header & Pills
+            document.getElementById('display-user').innerText = currentUser;
+            document.getElementById('display-cal').innerText = currentRoom;
+            const avatarBadge = document.getElementById('user-avatar-badge');
+            avatarBadge.innerText = currentUser.charAt(0).toUpperCase();
+            avatarBadge.style.backgroundColor = getAvatarColor(currentUser);
+            document.getElementById('header-switch-btn').classList.remove('hidden');
+
+            showStep('step-calendar');
+            renderGrid();
+
+            // Unsubscribe existing listener if any
+            if (activeListenerRef) {
+                activeListenerRef.off();
+            }
+
+            activeListenerRef = db.ref('calendars/' + currentRoom);
+            activeListenerRef.on('value', (snapshot) => {
+                remoteData = snapshot.val() || {};
+                renderGrid();
+                renderConsensusPanel();
+
+                // Live-update modal if open
+                if (modalState.isOpen && modalState.dateKey) {
+                    refreshModalView();
+                }
+            }, (error) => {
+                console.error("Firebase Sync Error: ", error);
+                showToast("Database sync error: Check Firebase Rules");
+            });
+        }
+
+        function saveRecentCalendar(room) {
+            try {
+                let recents = JSON.parse(localStorage.getItem('cal_recents') || '[]');
+                recents = recents.filter(r => r !== room);
+                recents.unshift(room);
+                if (recents.length > 5) recents.pop();
+                localStorage.setItem('cal_recents', JSON.stringify(recents));
+            } catch (e) {}
+        }
+
+        function renderRecentCalendars() {
+            const container = document.getElementById('recent-chips-container');
+            const box = document.getElementById('recent-calendars-box');
+            try {
+                const recents = JSON.parse(localStorage.getItem('cal_recents') || '[]');
+                if (recents.length > 0) {
+                    container.innerHTML = '';
+                    recents.forEach(room => {
+                        const chip = document.createElement('div');
+                        chip.className = 'chip';
+                        chip.innerHTML = `<span>📅</span> ${escapeHtml(room)}`;
+                        chip.onclick = () => {
+                            document.getElementById('cal-id').value = room;
+                            joinCalendar(room);
+                        };
+                        container.appendChild(chip);
+                    });
+                    box.classList.remove('hidden');
+                } else {
+                    box.classList.add('hidden');
+                }
+            } catch (e) {
+                box.classList.add('hidden');
+            }
+        }
+
+        // --- 6. DATE FORMAT & COMPATIBILITY ---
+        function formatDateKey(year, monthIndex, day) {
+            const m = String(monthIndex + 1).padStart(2, '0');
+            const d = String(day).padStart(2, '0');
+            return `${year}-${m}-${d}`;
+        }
+
+        function getPeopleForDate(dateKey, legacyDateKey) {
+            // Checks both padded '2026-09-05' and legacy '2026-9-5'
+            const listPadded = remoteData[dateKey];
+            if (Array.isArray(listPadded)) return listPadded;
+            const listLegacy = remoteData[legacyDateKey];
+            if (Array.isArray(listLegacy)) return listLegacy;
+            return [];
+        }
+
+        // --- 7. CALENDAR GRID RENDERING ---
         function renderGrid() {
             const grid = document.getElementById('calendar-grid');
             grid.innerHTML = '';
+
             const year = viewDate.getFullYear();
             const month = viewDate.getMonth();
-            document.getElementById('month-year').innerText = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(viewDate);
 
-            ['S','M','T','W','T','F','S'].forEach(d => {
+            // Month / Year Label
+            document.getElementById('month-year').innerText = new Intl.DateTimeFormat('en-US', { 
+                month: 'long', 
+                year: 'numeric' 
+            }).format(viewDate);
+
+            // Day Labels
+            ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(dayName => {
                 const el = document.createElement('div');
-                el.className = 'day-label'; el.innerText = d;
+                el.className = 'day-header';
+                el.innerText = dayName;
                 grid.appendChild(el);
             });
 
-            const firstDay = new Date(year, month, 1).getDay();
+            const firstDayIndex = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const todayStr = new Date().toDateString();
 
-            for (let i = 0; i < firstDay; i++) grid.appendChild(document.createElement('div'));
-
+            // Find highest count in current month for best-date highlighting
+            let maxCountInMonth = 0;
             for (let d = 1; d <= daysInMonth; d++) {
-                const dateStr = `${year}-${month + 1}-${d}`;
+                const dateKey = formatDateKey(year, month, d);
+                const legacyKey = `${year}-${month + 1}-${d}`;
+                const people = getPeopleForDate(dateKey, legacyKey);
+                if (people.length > maxCountInMonth) {
+                    maxCountInMonth = people.length;
+                }
+            }
+
+            // Blank filler cells before start of month
+            for (let i = 0; i < firstDayIndex; i++) {
+                const blank = document.createElement('div');
+                grid.appendChild(blank);
+            }
+
+            const todayDate = new Date();
+            todayDate.setHours(0, 0, 0, 0);
+
+            // Month Days
+            for (let d = 1; d <= daysInMonth; d++) {
+                const thisDate = new Date(year, month, d);
+                thisDate.setHours(0,0,0,0);
+                const isPast = thisDate < todayDate;
+                const isToday = todayDate.toDateString() === thisDate.toDateString();
+
+                const dateKey = formatDateKey(year, month, d);
+                const legacyKey = `${year}-${month + 1}-${d}`;
+                const people = getPeopleForDate(dateKey, legacyKey);
+                const userJoined = people.includes(currentUser);
+
                 const cell = document.createElement('div');
                 cell.className = 'cell';
-                if (new Date().toDateString() === new Date(year, month, d).toDateString()) cell.classList.add('today');
+                if (isToday) cell.classList.add('today');
+                if (isPast) cell.classList.add('past-day');
+                if (userJoined) cell.classList.add('user-selected');
+
+                // Top row with Date & Best Star
+                const cellTop = document.createElement('div');
+                cellTop.className = 'cell-top';
                 
-                cell.innerHTML = `<div class="date-num">${d}</div>`;
+                const dateNum = document.createElement('div');
+                dateNum.className = 'date-num';
+                dateNum.innerText = d;
+                cellTop.appendChild(dateNum);
+
+                if (maxCountInMonth >= 2 && people.length === maxCountInMonth) {
+                    const star = document.createElement('span');
+                    star.className = 'best-star';
+                    star.innerText = '★';
+                    star.title = 'Top group availability date!';
+                    cellTop.appendChild(star);
+                }
+                cell.appendChild(cellTop);
+
+                // Initials List
                 const list = document.createElement('div');
                 list.className = 'initials-list';
                 
-                const people = remoteData[dateStr] || [];
-                people.forEach(p => {
+                const maxVisibleBadges = 4;
+                people.slice(0, maxVisibleBadges).forEach(person => {
                     const span = document.createElement('span');
                     span.className = 'initial';
-                    span.innerText = p.charAt(0).toUpperCase();
+                    span.innerText = person.charAt(0).toUpperCase();
+                    span.style.backgroundColor = getAvatarColor(person);
+                    span.title = person;
                     list.appendChild(span);
                 });
+
+                if (people.length > maxVisibleBadges) {
+                    const more = document.createElement('span');
+                    more.className = 'more-count';
+                    more.innerText = `+${people.length - maxVisibleBadges}`;
+                    list.appendChild(more);
+                }
+
                 cell.appendChild(list);
-                cell.onclick = () => toggleDay(dateStr, people);
+
+                // Click opens detail modal
+                cell.onclick = () => openDayModal(dateKey, legacyKey, thisDate);
                 grid.appendChild(cell);
             }
         }
 
-        function toggleDay(dateStr, currentPeople) {
-            let newList = Array.isArray(currentPeople) ? [...currentPeople] : [];
-            if (newList.includes(currentUser)) {
-                newList = newList.filter(u => u !== currentUser);
-            } else {
-                newList.push(currentUser);
+        // --- 8. TOP CONSENSUS PANEL ---
+        function renderConsensusPanel() {
+            const panel = document.getElementById('consensus-panel');
+            const list = document.getElementById('top-dates-list');
+            const summary = document.getElementById('consensus-summary');
+
+            const year = viewDate.getFullYear();
+            const month = viewDate.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            const dateRanking = [];
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateKey = formatDateKey(year, month, d);
+                const legacyKey = `${year}-${month + 1}-${d}`;
+                const people = getPeopleForDate(dateKey, legacyKey);
+                if (people.length > 0) {
+                    dateRanking.push({
+                        dateKey,
+                        legacyKey,
+                        dateObj: new Date(year, month, d),
+                        count: people.length,
+                        people
+                    });
+                }
             }
-            db.ref('calendars/' + currentRoom + '/' + dateStr).set(newList);
+
+            dateRanking.sort((a, b) => b.count - a.count);
+
+            if (dateRanking.length === 0) {
+                panel.classList.add('hidden');
+                return;
+            }
+
+            panel.classList.remove('hidden');
+            list.innerHTML = '';
+            summary.innerText = `${dateRanking.length} active date${dateRanking.length > 1 ? 's' : ''}`;
+
+            dateRanking.slice(0, 4).forEach(item => {
+                const chip = document.createElement('div');
+                chip.className = 'top-date-chip';
+                const dayName = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).format(item.dateObj);
+                chip.innerHTML = `
+                    <span class="top-date-day">${dayName}</span>
+                    <span class="top-date-badge">👥 ${item.count} friend${item.count > 1 ? 's' : ''}</span>
+                `;
+                chip.onclick = () => openDayModal(item.dateKey, item.legacyKey, item.dateObj);
+                list.appendChild(chip);
+            });
         }
 
+        // --- 9. MODAL STATE MANAGEMENT (RULE COMPLIANCE) ---
+        // CRITICAL RULE: When developing UI Modals, explicitly reset all nested state variables
+        // whenever the modal's isOpen changes to true.
+        function resetModalState() {
+            modalState.isOpen = false;
+            modalState.dateKey = null;
+            modalState.isUserAvailable = false;
+            modalState.isLoading = false;
+            modalState.errorMessage = null;
+
+            const toggleBtn = document.getElementById('modal-toggle-btn');
+            if (toggleBtn) {
+                toggleBtn.disabled = false;
+                toggleBtn.className = 'btn btn-primary';
+            }
+        }
+
+        function openDayModal(dateKey, legacyKey, dateObj) {
+            // Explicitly reset nested state before opening
+            resetModalState();
+
+            modalState.isOpen = true;
+            modalState.dateKey = dateKey;
+            modalState.legacyKey = legacyKey;
+            modalState.dateObj = dateObj;
+
+            refreshModalView();
+
+            const modalEl = document.getElementById('day-modal');
+            modalEl.classList.add('open');
+        }
+
+        function refreshModalView() {
+            if (!modalState.dateObj) return;
+
+            const formattedDate = new Intl.DateTimeFormat('en-US', {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+            }).format(modalState.dateObj);
+
+            const shortWeekday = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(modalState.dateObj);
+            document.getElementById('modal-date-badge').innerText = `🗓️ ${shortWeekday}`;
+            document.getElementById('modal-date-title').innerText = formattedDate;
+
+            const people = getPeopleForDate(modalState.dateKey, modalState.legacyKey);
+            modalState.isUserAvailable = people.includes(currentUser);
+
+            const countText = people.length === 0 
+                ? "No one marked available yet" 
+                : `${people.length} friend${people.length > 1 ? 's' : ''} available`;
+            document.getElementById('modal-date-subtitle').innerText = countText;
+
+            // Render friend list
+            const listEl = document.getElementById('modal-friends-list');
+            listEl.innerHTML = '';
+
+            if (people.length === 0) {
+                listEl.innerHTML = `
+                    <div style="text-align:center; padding: 18px 0; color: var(--muted); font-size: 0.85rem;">
+                        Be the first to mark your availability for this date!
+                    </div>
+                `;
+            } else {
+                people.forEach(person => {
+                    const isYou = person.toLowerCase() === currentUser.toLowerCase();
+                    const row = document.createElement('div');
+                    row.className = 'friend-row';
+                    row.innerHTML = `
+                        <div class="friend-left">
+                            <div class="user-avatar-tiny" style="background-color:${getAvatarColor(person)};">
+                                ${person.charAt(0).toUpperCase()}
+                            </div>
+                            <span class="friend-name">${escapeHtml(person)}</span>
+                            ${isYou ? '<span class="friend-badge-you">You</span>' : ''}
+                        </div>
+                        <span style="color:var(--accent); font-size:0.9rem;">✓</span>
+                    `;
+                    listEl.appendChild(row);
+                });
+            }
+
+            // Update button state
+            const toggleBtn = document.getElementById('modal-toggle-btn');
+            if (modalState.isUserAvailable) {
+                toggleBtn.innerText = "✕ Remove My Availability";
+                toggleBtn.className = "btn btn-secondary";
+            } else {
+                toggleBtn.innerText = "✓ Mark Myself Available";
+                toggleBtn.className = "btn btn-primary";
+            }
+        }
+
+        function toggleModalDay() {
+            if (!modalState.dateKey || !currentRoom) return;
+
+            const people = getPeopleForDate(modalState.dateKey, modalState.legacyKey);
+            let newList = Array.isArray(people) ? [...people] : [];
+
+            if (newList.includes(currentUser)) {
+                newList = newList.filter(u => u !== currentUser);
+                showToast(`Removed from ${modalState.dateKey}`);
+            } else {
+                newList.push(currentUser);
+                showToast(`Marked available on ${modalState.dateKey}! 🎉`);
+            }
+
+            // Write standard padded key
+            db.ref('calendars/' + currentRoom + '/' + modalState.dateKey).set(newList);
+
+            // If legacy unpadded key existed and differs, clean it up
+            if (modalState.legacyKey && modalState.legacyKey !== modalState.dateKey && remoteData[modalState.legacyKey]) {
+                db.ref('calendars/' + currentRoom + '/' + modalState.legacyKey).remove();
+            }
+        }
+
+        function closeDayModal() {
+            const modalEl = document.getElementById('day-modal');
+            modalEl.classList.remove('open');
+            resetModalState();
+        }
+
+        function onBackdropClick(event) {
+            if (event.target.id === 'day-modal') {
+                closeDayModal();
+            }
+        }
+
+        // --- 10. CALENDAR NAVIGATION ---
         function changeMonth(dir) {
             viewDate.setMonth(viewDate.getMonth() + dir);
             renderGrid();
+            renderConsensusPanel();
         }
 
+        function goToToday() {
+            viewDate = new Date();
+            renderGrid();
+            renderConsensusPanel();
+        }
+
+        // --- 11. SHARING & CLIPBOARD ---
+        function copyShareLink() {
+            const shareUrl = window.location.origin + window.location.pathname + '?room=' + currentRoom;
+            
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    handleShareSuccess();
+                }).catch(() => {
+                    fallbackCopy(shareUrl);
+                });
+            } else {
+                fallbackCopy(shareUrl);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                handleShareSuccess();
+            } catch (err) {
+                prompt("Copy this link to share:", text);
+            }
+            document.body.removeChild(textArea);
+        }
+
+        function handleShareSuccess() {
+            const btn = document.getElementById('share-link-btn');
+            const originalText = btn.innerText;
+            btn.innerText = "✓ Copied Link to Clipboard!";
+            btn.classList.replace('btn-accent', 'btn-primary');
+            showToast("🔗 Link copied! Send it to your friends.");
+
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.classList.replace('btn-primary', 'btn-accent');
+            }, 2500);
+        }
+
+        // --- 12. TOAST NOTIFICATIONS ---
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerText = message;
+            container.appendChild(toast);
+
+            requestAnimationFrame(() => {
+                toast.classList.add('show');
+            });
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentNode) toast.parentNode.removeChild(toast);
+                }, 300);
+            }, 2800);
+        }
+
+        // --- 13. UTILS ---
         function showStep(id) {
             document.getElementById('step-name').classList.add('hidden');
             document.getElementById('step-join').classList.add('hidden');
@@ -199,10 +1568,17 @@ function joinCalendar() {
             document.getElementById(id).classList.remove('hidden');
         }
 
-        function copyShareLink() {
-            const url = window.location.origin + window.location.pathname + '?room=' + currentRoom;
-            navigator.clipboard.writeText(url);
-            alert("Link copied! Send it to friends.");
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag)
+            );
         }
     </script>
 </body>
