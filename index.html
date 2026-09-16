@@ -110,21 +110,31 @@
             showStep('step-join');
         }
 
-        function joinCalendar() {
-            if (!db) return alert("Firebase not connected. Check console for errors.");
-            const room = document.getElementById('cal-id').value.trim().toLowerCase().replace(/[^a-z0-9]/g, '-');
-            if (!room) return alert("Enter a calendar name");
-            
-            currentRoom = room;
-            document.getElementById('display-user').innerText = currentUser;
-            document.getElementById('display-cal').innerText = currentRoom;
-            showStep('step-calendar');
+function joinCalendar() {
+    if (!db) return alert("Firebase not connected. Check your config keys!");
+    
+    const roomInput = document.getElementById('cal-id').value.trim().toLowerCase().replace(/[^a-z0-9]/g, '-');
+    if (!roomInput) return alert("Enter a calendar name");
+    
+    currentRoom = roomInput;
+    document.getElementById('display-user').innerText = currentUser;
+    document.getElementById('display-cal').innerText = currentRoom;
+    
+    // 1. Show the step immediately
+    showStep('step-calendar');
+    
+    // 2. Draw a blank calendar right away so it's not empty
+    renderGrid(); 
 
-            db.ref('calendars/' + currentRoom).on('value', (snapshot) => {
-                remoteData = snapshot.val() || {};
-                renderGrid();
-            });
-        }
+    // 3. Then listen for the data from Firebase
+    db.ref('calendars/' + currentRoom).on('value', (snapshot) => {
+        remoteData = snapshot.val() || {};
+        renderGrid(); // Redraw when the data actually arrives
+    }, (error) => {
+        console.error("Firebase Sync Error: ", error);
+        alert("Could not sync with Database. Check your Firebase Rules!");
+    });
+}
 
         function renderGrid() {
             const grid = document.getElementById('calendar-grid');
