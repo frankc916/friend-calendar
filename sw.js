@@ -1,4 +1,4 @@
-const CACHE_NAME = 'syncup-pwa-v1';
+const CACHE_NAME = 'syncup-pwa-v2';
 
 const STATIC_ASSETS = [
   './',
@@ -9,6 +9,7 @@ const STATIC_ASSETS = [
   './icon.svg',
   'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap',
   'https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js',
+  'https://www.gstatic.com/firebasejs/9.22.0/firebase-app-check-compat.js',
   'https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js'
 ];
 

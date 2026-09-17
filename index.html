@@ -25,6 +25,7 @@
     
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-check-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <!-- Early Theme Detection to prevent flash of light theme (FOUC) -->
@@ -1406,6 +1407,18 @@
                 document.getElementById('config-error').classList.remove('hidden');
             } else {
                 firebase.initializeApp(firebaseConfig);
+
+                // Initialize Firebase App Check with reCAPTCHA Enterprise
+                try {
+                    const appCheck = firebase.appCheck();
+                    const provider = (firebase.appCheck && firebase.appCheck.ReCaptchaEnterpriseProvider)
+                        ? new firebase.appCheck.ReCaptchaEnterpriseProvider('6LeTA8AtAAAAAEqy8NHyr2O5FN7JAb0kexKXAb6W')
+                        : new firebase.appCheck.ReCaptchaV3Provider('6LeTA8AtAAAAAEqy8NHyr2O5FN7JAb0kexKXAb6W');
+                    appCheck.activate(provider, true);
+                } catch (appCheckErr) {
+                    console.warn("App Check initialization notice:", appCheckErr);
+                }
+
                 db = firebase.database();
             }
         } catch (e) {
