@@ -2111,6 +2111,11 @@
             }
         }
 
+        function triggerHaptic(type = 'light') {
+            const ms = type === 'medium' ? 18 : type === 'heavy' ? 25 : 10;
+            triggerHapticFeedback(ms);
+        }
+
         let deferredPrompt = null;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
