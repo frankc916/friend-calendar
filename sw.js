@@ -1,4 +1,4 @@
-const CACHE_NAME = 'syncup-pwa-v4';
+const CACHE_NAME = 'syncup-pwa-v5';
 
 const STATIC_ASSETS = [
   './',

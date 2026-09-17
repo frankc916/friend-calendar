@@ -567,6 +567,59 @@
             border-color: #a5b4fc;
         }
 
+        /* National Holiday Cell Highlight & Outlining */
+        .cell.holiday-cell {
+            border: 1.5px dashed #f59e0b;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(254, 243, 199, 0.25));
+        }
+
+        [data-theme="dark"] .cell.holiday-cell {
+            border: 1.5px dashed #f59e0b;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.14), rgba(30, 41, 59, 0.85));
+        }
+
+        .holiday-badge {
+            font-size: 0.58rem;
+            background: rgba(245, 158, 11, 0.18);
+            color: #b45309;
+            padding: 1px 4px;
+            border-radius: 4px;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 65px;
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            line-height: 1.2;
+        }
+
+        [data-theme="dark"] .holiday-badge {
+            background: rgba(245, 158, 11, 0.25);
+            color: #fde68a;
+        }
+
+        .modal-holiday-banner {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            color: #b45309;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        [data-theme="dark"] .modal-holiday-banner {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: rgba(245, 158, 11, 0.4);
+            color: #fde68a;
+        }
+
         .cell-top {
             display: flex;
             align-items: center;
@@ -993,6 +1046,16 @@
                 font-size: 0.72rem;
             }
 
+            .holiday-badge .holiday-name {
+                display: none;
+            }
+
+            .holiday-badge {
+                padding: 1px 3px;
+                max-width: none;
+                font-size: 0.65rem;
+            }
+
             .cal-topbar {
                 padding-bottom: 8px;
             }
@@ -1356,6 +1419,7 @@
         <div class="modal-card" role="dialog" aria-modal="true">
             <button class="modal-close-btn" onclick="closeDayModal()" aria-label="Close">✕</button>
             <div class="modal-date-badge" id="modal-date-badge">🗓️ Date</div>
+            <div class="modal-holiday-banner hidden" id="modal-holiday-banner"></div>
             <h3 class="modal-title" id="modal-date-title">Date Details</h3>
             <p class="modal-subtitle" id="modal-date-subtitle">0 friends available</p>
 
@@ -1676,6 +1740,54 @@
             }
         }
 
+        // --- US National / Federal Holidays Helper ---
+        function getNthWeekdayOfMonth(year, monthIndex, weekday, n) {
+            let count = 0;
+            const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+            for (let day = 1; day <= daysInMonth; day++) {
+                if (new Date(year, monthIndex, day).getDay() === weekday) {
+                    count++;
+                    if (count === n) return day;
+                }
+            }
+            return null;
+        }
+
+        function getLastWeekdayOfMonth(year, monthIndex, weekday) {
+            const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+            for (let day = daysInMonth; day >= 1; day--) {
+                if (new Date(year, monthIndex, day).getDay() === weekday) {
+                    return day;
+                }
+            }
+            return null;
+        }
+
+        function getHolidayForDate(year, monthIndex, day) {
+            // Fixed-date US National Holidays
+            if (monthIndex === 0 && day === 1) return "New Year's Day";
+            if (monthIndex === 5 && day === 19) return "Juneteenth";
+            if (monthIndex === 6 && day === 4) return "Independence Day";
+            if (monthIndex === 10 && day === 11) return "Veterans Day";
+            if (monthIndex === 11 && day === 25) return "Christmas Day";
+
+            // Floating US National Holidays
+            // MLK Day: 3rd Monday in January
+            if (monthIndex === 0 && day === getNthWeekdayOfMonth(year, 0, 1, 3)) return "Martin Luther King Jr. Day";
+            // Presidents' Day: 3rd Monday in February
+            if (monthIndex === 1 && day === getNthWeekdayOfMonth(year, 1, 1, 3)) return "Presidents' Day";
+            // Memorial Day: Last Monday in May
+            if (monthIndex === 4 && day === getLastWeekdayOfMonth(year, 4, 1)) return "Memorial Day";
+            // Labor Day: 1st Monday in September
+            if (monthIndex === 8 && day === getNthWeekdayOfMonth(year, 8, 1, 1)) return "Labor Day";
+            // Indigenous Peoples' Day: 2nd Monday in October
+            if (monthIndex === 9 && day === getNthWeekdayOfMonth(year, 9, 1, 2)) return "Indigenous Peoples' Day";
+            // Thanksgiving Day: 4th Thursday in November
+            if (monthIndex === 10 && day === getNthWeekdayOfMonth(year, 10, 4, 4)) return "Thanksgiving Day";
+
+            return null;
+        }
+
         // Instant availability toggle for 1-click interaction
         function quickAddMyselfToDate(dateKey, legacyKey) {
             if (!currentUser) {
@@ -1760,14 +1872,16 @@
                 const legacyKey = `${year}-${month + 1}-${d}`;
                 const people = getPeopleForDate(dateKey, legacyKey);
                 const userJoined = people.includes(currentUser);
+                const isHoliday = getHolidayForDate(year, month, d);
 
                 const cell = document.createElement('div');
                 cell.className = 'cell';
                 if (isToday) cell.classList.add('today');
                 if (isPast) cell.classList.add('past-day');
                 if (userJoined) cell.classList.add('user-selected');
+                if (isHoliday) cell.classList.add('holiday-cell');
 
-                // Top row with Date & Best Star
+                // Top row with Date & Badges
                 const cellTop = document.createElement('div');
                 cellTop.className = 'cell-top';
 
@@ -1776,13 +1890,27 @@
                 dateNum.innerText = d;
                 cellTop.appendChild(dateNum);
 
+                const badgesGroup = document.createElement('div');
+                badgesGroup.style.display = 'flex';
+                badgesGroup.style.alignItems = 'center';
+                badgesGroup.style.gap = '3px';
+
+                if (isHoliday) {
+                    const holidayBadge = document.createElement('span');
+                    holidayBadge.className = 'holiday-badge';
+                    holidayBadge.title = `🇺🇸 ${isHoliday}`;
+                    holidayBadge.innerHTML = `<span class="holiday-icon">🇺🇸</span><span class="holiday-name">${escapeHtml(isHoliday)}</span>`;
+                    badgesGroup.appendChild(holidayBadge);
+                }
+
                 if (maxCountInMonth >= 2 && people.length === maxCountInMonth) {
                     const star = document.createElement('span');
                     star.className = 'best-star';
                     star.innerText = '★';
                     star.title = 'Top group availability date!';
-                    cellTop.appendChild(star);
+                    badgesGroup.appendChild(star);
                 }
+                cellTop.appendChild(badgesGroup);
                 cell.appendChild(cellTop);
 
                 // Participant display based on count tiers:
@@ -1912,6 +2040,12 @@
                 toggleBtn.className = 'btn btn-primary';
                 toggleBtn.innerText = '✓ Mark Myself Available';
             }
+
+            const holidayBanner = document.getElementById('modal-holiday-banner');
+            if (holidayBanner) {
+                holidayBanner.classList.add('hidden');
+                holidayBanner.innerText = '';
+            }
         }
 
         function openDayModal(dateKey, legacyKey, dateObj) {
@@ -1941,6 +2075,24 @@
 
             const shortWeekday = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(modalState.dateObj);
             document.getElementById('modal-date-badge').innerText = `🗓️ ${shortWeekday}`;
+
+            // National holiday banner
+            const holidayName = getHolidayForDate(
+                modalState.dateObj.getFullYear(),
+                modalState.dateObj.getMonth(),
+                modalState.dateObj.getDate()
+            );
+            const holidayBanner = document.getElementById('modal-holiday-banner');
+            if (holidayBanner) {
+                if (holidayName) {
+                    holidayBanner.innerHTML = `<span>🇺🇸</span> National Holiday: <strong>${escapeHtml(holidayName)}</strong>`;
+                    holidayBanner.classList.remove('hidden');
+                } else {
+                    holidayBanner.classList.add('hidden');
+                    holidayBanner.innerText = '';
+                }
+            }
+
             document.getElementById('modal-date-title').innerText = formattedDate;
 
             const people = getPeopleForDate(modalState.dateKey, modalState.legacyKey);
