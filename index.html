@@ -1406,6 +1406,11 @@
             if (firebaseConfig.apiKey.includes("PASTE_HERE") || firebaseConfig.databaseURL.includes("PASTE_HERE")) {
                 document.getElementById('config-error').classList.remove('hidden');
             } else {
+                // Enable App Check debug token on localhost to prevent local 403 blocks
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+                }
+
                 firebase.initializeApp(firebaseConfig);
 
                 // Initialize Firebase App Check with reCAPTCHA Enterprise
