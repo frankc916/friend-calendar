@@ -16,6 +16,18 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
+    <!-- Early Theme Detection to prevent flash of light theme (FOUC) -->
+    <script>
+        (function() {
+            try {
+                const savedTheme = localStorage.getItem('cal_theme');
+                if (savedTheme === 'dark' || (!savedTheme && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            } catch (e) {}
+        })();
+    </script>
+
     <style>
         :root {
             --primary: #6366f1;
@@ -73,6 +85,38 @@
             align-items: center;
             justify-content: space-between;
             padding: 8px 4px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .theme-toggle-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            color: var(--slate);
+            font-size: 1.15rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .theme-toggle-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .theme-toggle-btn:active {
+            transform: translateY(0);
         }
 
         .brand-logo {
@@ -808,6 +852,204 @@
                 font-size: 0.75rem;
             }
         }
+
+        /* Dark Theme Variables & Overrides */
+        [data-theme="dark"] {
+            --primary: #818cf8;
+            --primary-hover: #6366f1;
+            --primary-light: #312e81;
+            --secondary: #a78bfa;
+            --accent: #34d399;
+            --accent-light: #064e3b;
+            --gold: #fbbf24;
+            --gold-light: #78350f;
+            --dark: #f8fafc;
+            --slate: #cbd5e1;
+            --muted: #94a3b8;
+            --border: #334155;
+            --bg-page: #0b0f19;
+            --card-bg: #1e293b;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+            --shadow-md: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.6);
+        }
+
+        [data-theme="dark"] body {
+            background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #0f172a 45%, #090d16 100%);
+            color: var(--dark);
+        }
+
+        [data-theme="dark"] .card {
+            border-color: #334155;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7);
+        }
+
+        [data-theme="dark"] .brand-title {
+            background: linear-gradient(135deg, #ffffff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        [data-theme="dark"] input[type="text"] {
+            background: #0f172a;
+            border-color: #334155;
+            color: #f8fafc;
+        }
+
+        [data-theme="dark"] input[type="text"]:focus {
+            background: #1e293b;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.25);
+        }
+
+        [data-theme="dark"] .btn-secondary {
+            background: #334155;
+            color: #f1f5f9;
+        }
+
+        [data-theme="dark"] .btn-secondary:hover {
+            background: #475569;
+            color: #ffffff;
+        }
+
+        [data-theme="dark"] .chip {
+            background: #0f172a;
+            border-color: #334155;
+            color: #cbd5e1;
+        }
+
+        [data-theme="dark"] .chip:hover {
+            background: #312e81;
+            color: #c7d2fe;
+            border-color: #818cf8;
+        }
+
+        [data-theme="dark"] .user-pill {
+            background: #0f172a;
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+
+        [data-theme="dark"] .room-pill {
+            background: #312e81;
+            color: #c7d2fe;
+        }
+
+        [data-theme="dark"] .nav-btn,
+        [data-theme="dark"] .today-btn {
+            background: #1e293b;
+            border-color: #334155;
+            color: #cbd5e1;
+        }
+
+        [data-theme="dark"] .nav-btn:hover,
+        [data-theme="dark"] .today-btn:hover {
+            background: #334155;
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        [data-theme="dark"] .cell {
+            background: #0f172a;
+            border-color: #1e293b;
+        }
+
+        [data-theme="dark"] .cell:hover {
+            border-color: var(--primary);
+            background: #1e293b;
+        }
+
+        [data-theme="dark"] .cell.today {
+            background: #1e1b4b;
+            border-color: var(--primary);
+        }
+
+        [data-theme="dark"] .cell.past-day {
+            background: #090d16;
+            opacity: 0.5;
+        }
+
+        [data-theme="dark"] .cell.user-selected {
+            background: #1e1b4b;
+            border-color: #6366f1;
+        }
+
+        [data-theme="dark"] .consensus-card {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border-color: #334155;
+        }
+
+        [data-theme="dark"] .consensus-title {
+            color: #93c5fd;
+        }
+
+        [data-theme="dark"] .top-date-chip {
+            background: #0f172a;
+            border-color: #334155;
+        }
+
+        [data-theme="dark"] .top-date-chip:hover {
+            border-color: var(--primary);
+            background: #1e293b;
+        }
+
+        [data-theme="dark"] .top-date-day {
+            color: #cbd5e1;
+        }
+
+        [data-theme="dark"] .top-date-badge {
+            color: #818cf8;
+        }
+
+        [data-theme="dark"] .modal-backdrop {
+            background: rgba(0, 0, 0, 0.75);
+        }
+
+        [data-theme="dark"] .modal-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        }
+
+        [data-theme="dark"] .modal-close-btn {
+            background: #334155;
+            color: #cbd5e1;
+        }
+
+        [data-theme="dark"] .modal-close-btn:hover {
+            background: #475569;
+            color: #ffffff;
+        }
+
+        [data-theme="dark"] .friends-list-container {
+            background: #0f172a;
+            border-color: #334155;
+        }
+
+        [data-theme="dark"] .friend-row {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        [data-theme="dark"] .friend-name {
+            color: #f8fafc;
+        }
+
+        [data-theme="dark"] .friend-badge-you {
+            background: #312e81;
+            color: #c7d2fe;
+        }
+
+        [data-theme="dark"] .modal-date-badge {
+            background: #312e81;
+            color: #c7d2fe;
+        }
+
+        [data-theme="dark"] .error-overlay {
+            background: #450a0a;
+            border-color: #7f1d1d;
+            color: #fca5a5;
+        }
     </style>
 </head>
 <body>
@@ -822,9 +1064,14 @@
                     <p class="brand-sub">Coordinate plans without the group-chat hassle</p>
                 </div>
             </div>
-            <button id="header-switch-btn" class="btn btn-secondary btn-sm hidden" onclick="switchCalendar()">
-                ⇄ Change Calendar
-            </button>
+            <div class="header-actions">
+                <button id="theme-toggle-btn" class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle dark mode" title="Toggle dark mode">
+                    <span id="theme-icon">🌙</span>
+                </button>
+                <button id="header-switch-btn" class="btn btn-secondary btn-sm hidden" onclick="switchCalendar()">
+                    ⇄ Change Calendar
+                </button>
+            </div>
         </header>
 
         <!-- Main Card -->
@@ -1031,6 +1278,9 @@
 
         // --- 4. INITIALIZATION & ROUTING ---
         window.addEventListener('DOMContentLoaded', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+            updateThemeButton(currentTheme);
+
             renderRecentCalendars();
             
             const params = new URLSearchParams(window.location.search);
@@ -1580,6 +1830,36 @@
                     '"': '&quot;'
                 }[tag] || tag)
             );
+        }
+
+        // --- 14. THEME MANAGEMENT ---
+        function toggleTheme() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const newTheme = isDark ? 'light' : 'dark';
+            if (newTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+            }
+            try {
+                localStorage.setItem('cal_theme', newTheme);
+            } catch (e) {}
+            updateThemeButton(newTheme);
+        }
+
+        function updateThemeButton(theme) {
+            const icon = document.getElementById('theme-icon');
+            const btn = document.getElementById('theme-toggle-btn');
+            if (!icon || !btn) return;
+            if (theme === 'dark') {
+                icon.innerText = '☀️';
+                btn.setAttribute('aria-label', 'Switch to light mode');
+                btn.title = 'Switch to light mode';
+            } else {
+                icon.innerText = '🌙';
+                btn.setAttribute('aria-label', 'Switch to dark mode');
+                btn.title = 'Switch to dark mode';
+            }
         }
     </script>
 </body>
