@@ -60,31 +60,42 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        html, body {
+            height: 100%;
+            height: 100dvh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
         body {
             background: linear-gradient(135deg, #f0f4ff 0%, #faf5ff 50%, #f0fdf4 100%);
-            min-height: 100vh;
             color: var(--dark);
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 16px 12px 40px 12px;
+            padding: 12px 12px 14px 12px;
+            box-sizing: border-box;
         }
 
         /* Container */
         .app-container {
             width: 100%;
             max-width: 580px;
+            height: 100%;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 10px;
+            min-height: 0;
         }
 
         /* Header Branding */
         .brand-header {
+            flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 8px 4px;
+            padding: 4px 2px;
         }
 
         .header-actions {
@@ -160,10 +171,14 @@
             border-radius: var(--radius-lg);
             border: 1px solid rgba(255, 255, 255, 0.8);
             box-shadow: var(--shadow-lg);
-            padding: 24px;
+            padding: 20px;
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
         }
 
         /* Setup / Form Layouts */
@@ -171,6 +186,8 @@
             display: flex;
             flex-direction: column;
             gap: 18px;
+            margin: auto 0;
+            overflow-y: auto;
         }
 
         .setup-title {
@@ -335,12 +352,22 @@
             transform: translateY(-1px);
         }
 
+        #step-calendar {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+        }
+
         /* Calendar Top Bar */
         .cal-topbar {
+            flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding-bottom: 16px;
+            padding-bottom: 12px;
             border-bottom: 1px solid var(--border);
             gap: 10px;
             flex-wrap: wrap;
@@ -388,10 +415,11 @@
 
         /* Month Navigation */
         .month-header {
+            flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin: 16px 0 12px 0;
+            margin: 10px 0 8px 0;
         }
 
         .month-title {
@@ -447,9 +475,12 @@
 
         /* Calendar Grid */
         .calendar-grid {
+            flex: 1;
+            min-height: 0;
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 6px;
+            grid-template-rows: auto repeat(var(--grid-rows, 5), 1fr);
+            gap: 5px;
         }
 
         .day-header {
@@ -457,7 +488,7 @@
             font-size: 0.72rem;
             font-weight: 800;
             color: var(--muted);
-            padding: 4px 0 8px 0;
+            padding: 2px 0 4px 0;
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
@@ -465,9 +496,10 @@
         .cell {
             background: #ffffff;
             border: 1.5px solid #f1f5f9;
-            min-height: 70px;
+            min-height: 0;
+            height: 100%;
             border-radius: var(--radius-sm);
-            padding: 6px 4px 4px 4px;
+            padding: 4px 4px;
             cursor: pointer;
             position: relative;
             touch-action: manipulation;
@@ -476,6 +508,8 @@
             justify-content: space-between;
             transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
             user-select: none;
+            box-sizing: border-box;
+            overflow: hidden;
         }
 
         .cell:hover {
@@ -572,11 +606,12 @@
 
         /* Best Dates Consensus Panel */
         .consensus-card {
+            flex-shrink: 0;
             background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
             border: 1px solid #dbeafe;
             border-radius: var(--radius-md);
-            padding: 14px 16px;
-            margin-top: 18px;
+            padding: 10px 12px;
+            margin-top: 8px;
         }
 
         .consensus-header {
@@ -640,9 +675,11 @@
 
         /* Share Bar */
         .share-bar {
+            flex-shrink: 0;
             display: flex;
             gap: 8px;
-            margin-top: 18px;
+            margin-top: auto;
+            padding-top: 10px;
         }
 
         /* Modal Styles */
@@ -837,20 +874,29 @@
         }
 
         @media (max-width: 480px) {
+            body {
+                padding: 8px 6px;
+            }
             .card {
-                padding: 18px 14px;
+                padding: 14px 10px;
             }
             .cell {
-                min-height: 60px;
-                padding: 4px 2px;
+                min-height: 0;
+                padding: 3px 2px;
             }
             .initial {
-                width: 17px;
-                height: 17px;
-                font-size: 0.58rem;
+                width: 16px;
+                height: 16px;
+                font-size: 0.55rem;
             }
             .date-num {
-                font-size: 0.75rem;
+                font-size: 0.72rem;
+            }
+            .cal-topbar {
+                padding-bottom: 8px;
+            }
+            .month-header {
+                margin: 6px 0 4px 0;
             }
         }
 
@@ -1469,6 +1515,9 @@
 
             const firstDayIndex = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const totalSlots = firstDayIndex + daysInMonth;
+            const dayRows = Math.ceil(totalSlots / 7);
+            grid.style.setProperty('--grid-rows', dayRows);
             const todayStr = new Date().toDateString();
 
             // Find highest count in current month for best-date highlighting
