@@ -565,19 +565,71 @@
             filter: drop-shadow(0 1px 2px rgba(245, 158, 11, 0.4));
         }
 
+        @keyframes bubblePop {
+            0% {
+                transform: scale(0.35);
+                opacity: 0;
+            }
+            70% {
+                transform: scale(1.16);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Tier 1: Full Names List (1-3 friends) */
+        .cell-names-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2.5px;
+            margin-top: 3px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .cell-name-pill {
+            display: flex;
+            align-items: center;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 5px;
+            border-radius: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.25;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            animation: bubblePop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+            max-width: 100%;
+        }
+
+        .cell-name-pill span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Tier 2: Initials Grid (4-9 friends) */
         .initials-list {
             display: flex;
             flex-wrap: wrap;
-            gap: 3px;
-            margin-top: 4px;
+            gap: 2.5px;
+            margin-top: 3px;
             align-content: flex-start;
+            justify-content: flex-start;
+            width: 100%;
+            overflow: hidden;
         }
 
         .initial {
             color: white;
             font-size: 0.62rem;
-            width: 19px;
-            height: 19px;
+            width: 18px;
+            height: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -585,6 +637,7 @@
             font-weight: 700;
             box-shadow: 0 1px 3px rgba(0,0,0,0.15);
             flex-shrink: 0;
+            animation: bubblePop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
             transition: transform 0.15s ease;
         }
 
@@ -593,15 +646,23 @@
             z-index: 3;
         }
 
-        .more-count {
-            background: #64748b;
+        /* Tier 3: Count Badge (10+ friends) */
+        .cell-count-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
-            font-size: 0.58rem;
-            padding: 1px 4px;
-            border-radius: 10px;
-            font-weight: 700;
-            line-height: 1.2;
-            align-self: center;
+            border-radius: 12px;
+            padding: 3px 6px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            margin: auto 0 2px 0;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+            animation: bubblePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+            width: 100%;
+            text-align: center;
         }
 
         /* Best Dates Consensus Panel */
@@ -884,10 +945,19 @@
                 min-height: 0;
                 padding: 3px 2px;
             }
+            .cell-name-pill {
+                font-size: 0.58rem;
+                padding: 1.5px 3px;
+                border-radius: 4px;
+            }
             .initial {
                 width: 16px;
                 height: 16px;
                 font-size: 0.55rem;
+            }
+            .cell-count-badge {
+                font-size: 0.65rem;
+                padding: 2px 4px;
             }
             .date-num {
                 font-size: 0.72rem;
@@ -1576,28 +1646,47 @@
                 }
                 cell.appendChild(cellTop);
 
-                // Initials List
-                const list = document.createElement('div');
-                list.className = 'initials-list';
-                
-                const maxVisibleBadges = 4;
-                people.slice(0, maxVisibleBadges).forEach(person => {
-                    const span = document.createElement('span');
-                    span.className = 'initial';
-                    span.innerText = person.charAt(0).toUpperCase();
-                    span.style.backgroundColor = getAvatarColor(person);
-                    span.title = person;
-                    list.appendChild(span);
-                });
+                // Participant display based on count tiers:
+                // Tier 1: 1 to 3 friends -> Full names stacked
+                // Tier 2: 4 to 9 friends -> Initials grid (up to 9 circles)
+                // Tier 3: 10+ friends -> Summary count badge (e.g. 👥 12)
+                if (people.length >= 1 && people.length <= 3) {
+                    const namesList = document.createElement('div');
+                    namesList.className = 'cell-names-list';
+                    people.forEach((person, idx) => {
+                        const pill = document.createElement('div');
+                        pill.className = 'cell-name-pill';
+                        pill.style.backgroundColor = getAvatarColor(person);
+                        pill.style.animationDelay = `${idx * 40}ms`;
+                        pill.title = person;
 
-                if (people.length > maxVisibleBadges) {
-                    const more = document.createElement('span');
-                    more.className = 'more-count';
-                    more.innerText = `+${people.length - maxVisibleBadges}`;
-                    list.appendChild(more);
+                        const nameSpan = document.createElement('span');
+                        nameSpan.innerText = person;
+                        pill.appendChild(nameSpan);
+
+                        namesList.appendChild(pill);
+                    });
+                    cell.appendChild(namesList);
+                } else if (people.length >= 4 && people.length <= 9) {
+                    const initialsList = document.createElement('div');
+                    initialsList.className = 'initials-list';
+                    people.forEach((person, idx) => {
+                        const span = document.createElement('span');
+                        span.className = 'initial';
+                        span.innerText = person.charAt(0).toUpperCase();
+                        span.style.backgroundColor = getAvatarColor(person);
+                        span.style.animationDelay = `${idx * 30}ms`;
+                        span.title = person;
+                        initialsList.appendChild(span);
+                    });
+                    cell.appendChild(initialsList);
+                } else if (people.length >= 10) {
+                    const countBadge = document.createElement('div');
+                    countBadge.className = 'cell-count-badge';
+                    countBadge.innerText = `👥 ${people.length}`;
+                    countBadge.title = `${people.length} friends available: ${people.join(', ')}`;
+                    cell.appendChild(countBadge);
                 }
-
-                cell.appendChild(list);
 
                 // Click opens detail modal
                 cell.onclick = () => openDayModal(dateKey, legacyKey, thisDate);
