@@ -1598,6 +1598,30 @@
             return [];
         }
 
+        // Instant availability toggle for 1-click interaction
+        function quickAddMyselfToDate(dateKey, legacyKey) {
+            if (!currentUser) {
+                showStep('step-name');
+                return;
+            }
+            if (!currentRoom || !db) {
+                showToast("⚠️ Calendar not connected.");
+                return;
+            }
+
+            const people = getPeopleForDate(dateKey, legacyKey);
+            let newList = Array.isArray(people) ? [...people] : [];
+            if (!newList.includes(currentUser)) {
+                newList.push(currentUser);
+                db.ref('calendars/' + currentRoom + '/' + dateKey).set(newList);
+                if (legacyKey && legacyKey !== dateKey && remoteData[legacyKey]) {
+                    db.ref('calendars/' + currentRoom + '/' + legacyKey).remove();
+                }
+                triggerHaptic('light');
+                showToast(`Marked available on ${dateKey}! 🎉`);
+            }
+        }
+
         // --- 7. CALENDAR GRID RENDERING ---
         function renderGrid() {
             const grid = document.getElementById('calendar-grid');
@@ -1725,8 +1749,19 @@
                     cell.appendChild(countBadge);
                 }
 
-                // Click opens detail modal
-                cell.onclick = () => openDayModal(dateKey, legacyKey, thisDate);
+                // Single-click adds availability; second click opens modal to view/remove
+                cell.onclick = () => {
+                    if (!currentUser) {
+                        showStep('step-name');
+                        return;
+                    }
+                    const currentPeople = getPeopleForDate(dateKey, legacyKey);
+                    if (!currentPeople.includes(currentUser)) {
+                        quickAddMyselfToDate(dateKey, legacyKey);
+                    } else {
+                        openDayModal(dateKey, legacyKey, thisDate);
+                    }
+                };
                 grid.appendChild(cell);
             }
         }
@@ -1787,6 +1822,8 @@
         function resetModalState() {
             modalState.isOpen = false;
             modalState.dateKey = null;
+            modalState.legacyKey = null;
+            modalState.dateObj = null;
             modalState.isUserAvailable = false;
             modalState.isLoading = false;
             modalState.errorMessage = null;
@@ -1795,6 +1832,7 @@
             if (toggleBtn) {
                 toggleBtn.disabled = false;
                 toggleBtn.className = 'btn btn-primary';
+                toggleBtn.innerText = '✓ Mark Myself Available';
             }
         }
 
@@ -1867,7 +1905,7 @@
             // Update button state
             const toggleBtn = document.getElementById('modal-toggle-btn');
             if (modalState.isUserAvailable) {
-                toggleBtn.innerText = "✕ Remove My Availability";
+                toggleBtn.innerText = "✕ Remove Myself";
                 toggleBtn.className = "btn btn-secondary";
             } else {
                 toggleBtn.innerText = "✓ Mark Myself Available";
@@ -1884,17 +1922,20 @@
             if (newList.includes(currentUser)) {
                 newList = newList.filter(u => u !== currentUser);
                 showToast(`Removed from ${modalState.dateKey}`);
+                db.ref('calendars/' + currentRoom + '/' + modalState.dateKey).set(newList);
+                if (modalState.legacyKey && modalState.legacyKey !== modalState.dateKey && remoteData[modalState.legacyKey]) {
+                    db.ref('calendars/' + currentRoom + '/' + modalState.legacyKey).remove();
+                }
+                triggerHaptic('medium');
+                closeDayModal();
             } else {
                 newList.push(currentUser);
                 showToast(`Marked available on ${modalState.dateKey}! 🎉`);
-            }
-
-            // Write standard padded key
-            db.ref('calendars/' + currentRoom + '/' + modalState.dateKey).set(newList);
-
-            // If legacy unpadded key existed and differs, clean it up
-            if (modalState.legacyKey && modalState.legacyKey !== modalState.dateKey && remoteData[modalState.legacyKey]) {
-                db.ref('calendars/' + currentRoom + '/' + modalState.legacyKey).remove();
+                db.ref('calendars/' + currentRoom + '/' + modalState.dateKey).set(newList);
+                if (modalState.legacyKey && modalState.legacyKey !== modalState.dateKey && remoteData[modalState.legacyKey]) {
+                    db.ref('calendars/' + currentRoom + '/' + modalState.legacyKey).remove();
+                }
+                triggerHaptic('light');
             }
         }
 
