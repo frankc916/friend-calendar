@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <!-- Background with rounded corners -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
+  
+  <!-- Calendar Base -->
+  <rect x="96" y="112" width="320" height="304" rx="28" fill="#ffffff" filter="drop-shadow(0 12px 24px rgba(0,0,0,0.18))"/>
+  
+  <!-- Calendar Header Bar -->
+  <path d="M 96 140 C 96 124.5 108.5 112 124 112 L 388 112 C 403.5 112 416 124.5 416 140 L 416 200 L 96 200 Z" fill="#4f46e5"/>
+  
+  <!-- Binder Rings -->
+  <rect x="160" y="84" width="32" height="56" rx="16" fill="#cbd5e1"/>
+  <rect x="320" y="84" width="32" height="56" rx="16" fill="#cbd5e1"/>
+  
+  <!-- Calendar Grid Dots -->
+  <rect x="140" y="236" width="48" height="38" rx="8" fill="#6366f1"/>
+  <rect x="232" y="236" width="48" height="38" rx="8" fill="#6366f1"/>
+  <rect x="324" y="236" width="48" height="38" rx="8" fill="#6366f1"/>
+  
+  <rect x="140" y="300" width="48" height="38" rx="8" fill="#6366f1"/>
+  <rect x="232" y="300" width="48" height="38" rx="8" fill="#10b981"/>
+  <rect x="324" y="300" width="48" height="38" rx="8" fill="#6366f1"/>
+  
+  <rect x="140" y="364" width="48" height="38" rx="8" fill="#6366f1"/>
+  <rect x="232" y="364" width="48" height="38" rx="8" fill="#6366f1"/>
+  <rect x="324" y="364" width="48" height="38" rx="8" fill="#6366f1"/>
+</svg>
