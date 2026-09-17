@@ -1545,6 +1545,10 @@
             activeListenerRef = db.ref('calendars/' + currentRoom);
             activeListenerRef.on('value', (snapshot) => {
                 remoteData = snapshot.val() || {};
+
+                // Auto-prune availability dates older than 2 weeks
+                cleanOldAvailabilityDates(currentRoom, remoteData);
+
                 renderGrid();
                 renderConsensusPanel();
 
@@ -1608,6 +1612,46 @@
             const listLegacy = remoteData[legacyDateKey];
             if (Array.isArray(listLegacy)) return listLegacy;
             return [];
+        }
+
+        // Auto-purge availability dates older than 2 weeks (14 days)
+        const cleanedRooms = new Set();
+        function cleanOldAvailabilityDates(room, data) {
+            if (!room || !data || !db || cleanedRooms.has(room)) return;
+
+            const cutoff = new Date();
+            cutoff.setHours(0, 0, 0, 0);
+            cutoff.setDate(cutoff.getDate() - 14);
+
+            const updates = {};
+            let hasExpired = false;
+
+            Object.keys(data).forEach(key => {
+                const match = key.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+                if (match) {
+                    const year = parseInt(match[1], 10);
+                    const month = parseInt(match[2], 10);
+                    const day = parseInt(match[3], 10);
+                    const dateObj = new Date(year, month - 1, day);
+                    dateObj.setHours(0, 0, 0, 0);
+
+                    if (dateObj < cutoff) {
+                        updates[key] = null; // Setting null deletes the key in Firebase
+                        hasExpired = true;
+                    }
+                }
+            });
+
+            if (hasExpired) {
+                cleanedRooms.add(room);
+                db.ref('calendars/' + room).update(updates).then(() => {
+                    console.log(`Cleaned ${Object.keys(updates).length} date(s) older than 2 weeks from '${room}'.`);
+                }).catch(err => {
+                    console.warn("Could not prune old dates:", err);
+                });
+            } else {
+                cleanedRooms.add(room);
+            }
         }
 
         // Instant availability toggle for 1-click interaction
