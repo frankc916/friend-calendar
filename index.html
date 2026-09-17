@@ -1401,6 +1401,18 @@
             return AVATAR_COLORS[index];
         }
 
+        // Haptic feedback helper
+        function triggerHapticFeedback(duration = 10) {
+            if (navigator.vibrate) {
+                try { navigator.vibrate(duration); } catch (e) {}
+            }
+        }
+
+        function triggerHaptic(type = 'light') {
+            const ms = type === 'medium' ? 18 : type === 'heavy' ? 25 : 10;
+            triggerHapticFeedback(ms);
+        }
+
         // --- 3. FIREBASE INIT ---
         try {
             if (firebaseConfig.apiKey.includes("PASTE_HERE") || firebaseConfig.databaseURL.includes("PASTE_HERE")) {
@@ -2104,18 +2116,7 @@
             }
         }
 
-        // --- 15. PWA, HAPTICS & SERVICE WORKER ---
-        function triggerHapticFeedback(duration = 10) {
-            if (navigator.vibrate) {
-                try { navigator.vibrate(duration); } catch (e) {}
-            }
-        }
-
-        function triggerHaptic(type = 'light') {
-            const ms = type === 'medium' ? 18 : type === 'heavy' ? 25 : 10;
-            triggerHapticFeedback(ms);
-        }
-
+        // --- 15. PWA INSTALL & SERVICE WORKER ---
         let deferredPrompt = null;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
