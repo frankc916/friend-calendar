@@ -1,4 +1,4 @@
-const CACHE_NAME = 'friendsync-pwa-v1';
+const CACHE_NAME = 'syncup-pwa-v1';
 
 const STATIC_ASSETS = [
   './',

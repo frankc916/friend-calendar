@@ -12,7 +12,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Friend Sync">
+    <meta name="apple-mobile-web-app-title" content="Sync-Up">
     <link rel="apple-touch-icon" href="icon-192.png">
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
     <link rel="icon" type="image/svg+xml" href="icon.svg">
@@ -1194,7 +1194,7 @@
             <div class="brand-logo">
                 <div class="logo-badge">🗓️</div>
                 <div>
-                    <h1 class="brand-title">Friend Sync</h1>
+                    <h1 class="brand-title">Sync-Up</h1>
                     <p class="brand-sub">Coordinate plans without the group-chat hassle</p>
                 </div>
             </div>
@@ -1913,7 +1913,7 @@
             // Check for native mobile Web Share API (iOS Safari & Android Chrome)
             if (navigator.share) {
                 navigator.share({
-                    title: 'Friend Sync',
+                    title: 'Sync-Up',
                     text: `Coordinate plans on "${currentRoom}" without the group chat hassle!`,
                     url: shareUrl
                 }).then(() => {
@@ -2066,7 +2066,7 @@
             deferredPrompt.prompt();
             deferredPrompt.userChoice.then((choiceResult) => {
                 if (choiceResult.outcome === 'accepted') {
-                    showToast("🎉 Thanks for installing Friend Sync!");
+                    showToast("🎉 Thanks for installing Sync-Up!");
                 }
                 deferredPrompt = null;
                 const installBtn = document.getElementById('pwa-install-btn');

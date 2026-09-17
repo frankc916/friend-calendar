@@ -1,7 +1,7 @@
 {
-  "id": "friend-sync-app",
-  "name": "Friend Sync - Hangout Availability Calendar",
-  "short_name": "Friend Sync",
+  "id": "syncup-app",
+  "name": "Sync-Up - Hangout Availability Calendar",
+  "short_name": "Sync-Up",
   "description": "Coordinate hangout plans without the group-chat hassle. Real-time friend availability calendar.",
   "start_url": "./index.html",
   "scope": "./",

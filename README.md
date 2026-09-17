@@ -1,4 +1,4 @@
-# 🗓️ Friend Sync - Availability Calendar
+# 🗓️ Sync-Up - Availability Calendar
 
 A fast, beautiful, and real-time collaborative calendar web application designed to eliminate group-chat scheduling friction. Create an event calendar, share the link with friends, and instantly find the best days everyone is free.
 
@@ -6,12 +6,15 @@ A fast, beautiful, and real-time collaborative calendar web application designed
 ![CSS3](https://img.shields.io/badge/Vanilla_CSS3-1572B6?style=flat&logo=css3&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
 ![Firebase](https://img.shields.io/badge/Firebase_Realtime_DB-FFCA28?style=flat&logo=firebase&logoColor=black)
+![PWA](https://img.shields.io/badge/PWA-Ready-success?style=flat&logo=pwa)
 
 ---
 
 ## ✨ Features
 
 - **⚡ Real-Time Group Synchronization**: Powered by Firebase Realtime Database. As soon as a friend marks their availability, your screen updates instantly without refreshing.
+- **📲 Installable Progressive Web App (PWA)**: Installable on iOS and Android home screens with offline caching, native Web Share API, and haptic feedback.
+- **🌓 Dark Mode & Auto-Stretching Layout**: Integrated theme toggle with instant anti-FOUC bootstrap, fluid screen height fitting with zero scrolling, and bottom-pinned share action.
 - **🔥 Best Days Consensus Ranking**: Automatically analyzes group availability and highlights the top dates with highest consensus and a star badge.
 - **🎨 Rich Modern Aesthetics**: Clean glassmorphism cards, Google Fonts (`Plus Jakarta Sans`), tailored color palette, and dynamic avatar color hashing per participant name.
 - **🔍 Day Detail & Inspection Modal**: Tap any day to inspect the full list of friends available on that date and easily toggle your own attendance.
@@ -24,7 +27,7 @@ A fast, beautiful, and real-time collaborative calendar web application designed
 ## 🚀 Getting Started
 
 ### 1. Running Locally
-Because Friend Sync is built as a zero-dependency static web application, you can run it directly:
+Because Sync-Up is built as a zero-dependency static web application, you can run it directly:
 - Simply double-click `index.html` or open it in any web browser.
 - Or use any local server:
   ```bash
