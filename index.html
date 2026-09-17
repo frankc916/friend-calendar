@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Friend Availability Calendar - Plan Hangouts Easily</title>
-    <meta name="description" content="Find the best days to meet up with friends. Real-time shared availability calendar.">
-    
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Sync-Up - Plan Hangouts Easily</title>
+    <meta name="description"
+        content="Find the best days to meet up with friends. Real-time shared availability calendar.">
+
     <!-- PWA & Mobile Web Meta -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" id="meta-theme-color" content="#6366f1">
@@ -17,12 +20,13 @@
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
     <link rel="icon" type="image/svg+xml" href="icon.svg">
     <link rel="icon" href="icon-192.png">
-    
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-check-compat.js"></script>
@@ -30,13 +34,13 @@
 
     <!-- Early Theme Detection to prevent flash of light theme (FOUC) -->
     <script>
-        (function() {
+        (function () {
             try {
                 const savedTheme = localStorage.getItem('cal_theme');
                 if (savedTheme === 'dark' || (!savedTheme && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                     document.documentElement.setAttribute('data-theme', 'dark');
                 }
-            } catch (e) {}
+            } catch (e) { }
         })();
     </script>
 
@@ -59,7 +63,7 @@
             --radius-lg: 20px;
             --radius-md: 12px;
             --radius-sm: 8px;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
             --shadow-md: 0 4px 20px -2px rgba(99, 102, 241, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
             --shadow-lg: 0 20px 40px -10px rgba(15, 23, 42, 0.12);
         }
@@ -72,7 +76,8 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        html, body {
+        html,
+        body {
             height: 100%;
             height: 100dvh;
             margin: 0;
@@ -587,10 +592,12 @@
                 transform: scale(0.35);
                 opacity: 0;
             }
+
             70% {
                 transform: scale(1.16);
                 opacity: 1;
             }
+
             100% {
                 transform: scale(1);
                 opacity: 1;
@@ -619,7 +626,7 @@
             overflow: hidden;
             text-overflow: ellipsis;
             line-height: 1.25;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
             animation: bubblePop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
             max-width: 100%;
         }
@@ -652,7 +659,7 @@
             justify-content: center;
             border-radius: 50%;
             font-weight: 700;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
             flex-shrink: 0;
             animation: bubblePop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
             transition: transform 0.15s ease;
@@ -922,7 +929,7 @@
             border-radius: 30px;
             font-size: 0.88rem;
             font-weight: 600;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
             opacity: 0;
             transform: translateY(12px);
             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -955,33 +962,41 @@
             body {
                 padding: 8px 6px;
             }
+
             .card {
                 padding: 14px 10px;
             }
+
             .cell {
                 min-height: 0;
                 padding: 3px 2px;
             }
+
             .cell-name-pill {
                 font-size: 0.58rem;
                 padding: 1.5px 3px;
                 border-radius: 4px;
             }
+
             .initial {
                 width: 16px;
                 height: 16px;
                 font-size: 0.55rem;
             }
+
             .cell-count-badge {
                 font-size: 0.65rem;
                 padding: 2px 4px;
             }
+
             .date-num {
                 font-size: 0.72rem;
             }
+
             .cal-topbar {
                 padding-bottom: 8px;
             }
+
             .month-header {
                 margin: 6px 0 4px 0;
             }
@@ -1003,7 +1018,7 @@
             --border: #334155;
             --bg-page: #0b0f19;
             --card-bg: #1e293b;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
             --shadow-md: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
             --shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.6);
         }
@@ -1187,6 +1202,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <div class="app-container">
@@ -1200,10 +1216,12 @@
                 </div>
             </div>
             <div class="header-actions">
-                <button id="pwa-install-btn" class="btn btn-secondary btn-sm hidden" onclick="installPWA()" aria-label="Install App" title="Install App">
+                <button id="pwa-install-btn" class="btn btn-secondary btn-sm hidden" onclick="installPWA()"
+                    aria-label="Install App" title="Install App">
                     📲 Install
                 </button>
-                <button id="theme-toggle-btn" class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle dark mode" title="Toggle dark mode">
+                <button id="theme-toggle-btn" class="theme-toggle-btn" onclick="toggleTheme()"
+                    aria-label="Toggle dark mode" title="Toggle dark mode">
                     <span id="theme-icon">🌙</span>
                 </button>
                 <button id="header-switch-btn" class="btn btn-secondary btn-sm hidden" onclick="switchCalendar()">
@@ -1231,7 +1249,8 @@
                     <label class="input-label" for="user-name">Your Display Name</label>
                     <div class="input-wrapper">
                         <span class="input-icon">👤</span>
-                        <input type="text" id="user-name" placeholder="e.g. Alice, Marcus, Sarah..." maxlength="25" autocomplete="name" onkeydown="if(event.key==='Enter') saveName()">
+                        <input type="text" id="user-name" placeholder="e.g. Alice, Marcus, Sarah..." maxlength="25"
+                            autocomplete="name" onkeydown="if(event.key==='Enter') saveName()">
                     </div>
                 </div>
 
@@ -1256,7 +1275,8 @@
                     <label class="input-label" for="cal-id">Calendar / Trip Name</label>
                     <div class="input-wrapper">
                         <span class="input-icon">🎉</span>
-                        <input type="text" id="cal-id" placeholder="e.g. HawaiiTrip, BoardGameNight..." maxlength="30" onkeydown="if(event.key==='Enter') joinCalendar()">
+                        <input type="text" id="cal-id" placeholder="e.g. HawaiiTrip, BoardGameNight..." maxlength="30"
+                            onkeydown="if(event.key==='Enter') joinCalendar()">
                     </div>
                 </div>
 
@@ -1289,7 +1309,8 @@
                         <button class="btn btn-secondary btn-sm" onclick="editProfile()" title="Change your name">
                             Profile
                         </button>
-                        <button class="btn btn-secondary btn-sm" onclick="switchCalendar()" title="Switch to another room">
+                        <button class="btn btn-secondary btn-sm" onclick="switchCalendar()"
+                            title="Switch to another room">
                             Switch
                         </button>
                     </div>
@@ -1314,7 +1335,8 @@
                         <div class="consensus-title">
                             <span>🔥</span> Top Available Dates
                         </div>
-                        <span style="font-size:0.75rem; color:var(--muted); font-weight:600;" id="consensus-summary"></span>
+                        <span style="font-size:0.75rem; color:var(--muted); font-weight:600;"
+                            id="consensus-summary"></span>
                     </div>
                     <div class="top-dates-list" id="top-dates-list"></div>
                 </div>
@@ -1386,8 +1408,8 @@
 
         // Vibrant distinct avatar palette generator
         const AVATAR_COLORS = [
-            '#6366f1', '#ec4899', '#f59e0b', '#10b981', 
-            '#8b5cf6', '#06b6d4', '#f97316', '#14b8a6', 
+            '#6366f1', '#ec4899', '#f59e0b', '#10b981',
+            '#8b5cf6', '#06b6d4', '#f97316', '#14b8a6',
             '#3b82f6', '#ef4444', '#84cc16', '#a855f7'
         ];
 
@@ -1404,7 +1426,7 @@
         // Haptic feedback helper
         function triggerHapticFeedback(duration = 10) {
             if (navigator.vibrate) {
-                try { navigator.vibrate(duration); } catch (e) {}
+                try { navigator.vibrate(duration); } catch (e) { }
             }
         }
 
@@ -1449,7 +1471,7 @@
             updateThemeButton(currentTheme);
 
             renderRecentCalendars();
-            
+
             const params = new URLSearchParams(window.location.search);
             const roomParam = params.get('room');
             if (roomParam) {
@@ -1569,7 +1591,7 @@
                 recents.unshift(room);
                 if (recents.length > 5) recents.pop();
                 localStorage.setItem('cal_recents', JSON.stringify(recents));
-            } catch (e) {}
+            } catch (e) { }
         }
 
         function renderRecentCalendars() {
@@ -1687,9 +1709,9 @@
             const month = viewDate.getMonth();
 
             // Month / Year Label
-            document.getElementById('month-year').innerText = new Intl.DateTimeFormat('en-US', { 
-                month: 'long', 
-                year: 'numeric' 
+            document.getElementById('month-year').innerText = new Intl.DateTimeFormat('en-US', {
+                month: 'long',
+                year: 'numeric'
             }).format(viewDate);
 
             // Day Labels
@@ -1730,7 +1752,7 @@
             // Month Days
             for (let d = 1; d <= daysInMonth; d++) {
                 const thisDate = new Date(year, month, d);
-                thisDate.setHours(0,0,0,0);
+                thisDate.setHours(0, 0, 0, 0);
                 const isPast = thisDate < todayDate;
                 const isToday = todayDate.toDateString() === thisDate.toDateString();
 
@@ -1748,7 +1770,7 @@
                 // Top row with Date & Best Star
                 const cellTop = document.createElement('div');
                 cellTop.className = 'cell-top';
-                
+
                 const dateNum = document.createElement('div');
                 dateNum.className = 'date-num';
                 dateNum.innerText = d;
@@ -1924,8 +1946,8 @@
             const people = getPeopleForDate(modalState.dateKey, modalState.legacyKey);
             modalState.isUserAvailable = people.includes(currentUser);
 
-            const countText = people.length === 0 
-                ? "No one marked available yet" 
+            const countText = people.length === 0
+                ? "No one marked available yet"
                 : `${people.length} friend${people.length > 1 ? 's' : ''} available`;
             document.getElementById('modal-date-subtitle').innerText = countText;
 
@@ -2024,7 +2046,7 @@
         function copyShareLink() {
             triggerHapticFeedback(12);
             const shareUrl = window.location.origin + window.location.pathname + '?room=' + currentRoom;
-            
+
             // Check for native mobile Web Share API (iOS Safari & Android Chrome)
             if (navigator.share) {
                 navigator.share({
@@ -2115,7 +2137,7 @@
 
         function escapeHtml(str) {
             if (!str) return '';
-            return str.replace(/[&<>'"]/g, 
+            return str.replace(/[&<>'"]/g,
                 tag => ({
                     '&': '&amp;',
                     '<': '&lt;',
@@ -2138,7 +2160,7 @@
             }
             try {
                 localStorage.setItem('cal_theme', newTheme);
-            } catch (e) {}
+            } catch (e) { }
             updateThemeButton(newTheme);
         }
 
@@ -2199,4 +2221,5 @@
         }
     </script>
 </body>
+
 </html>
